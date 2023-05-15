@@ -1,11 +1,94 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
-
-const inter = Inter({ subsets: ['latin'] })
+import Head from "next/head";
+import styles from "@/styles/Home.module.css";
+import React from "react";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  GoogleAuthProvider,
+  signInAnonymously,
+  signInWithCustomToken,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  UserCredential,
+} from "firebase/auth";
 
 export default function Home() {
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [customToken, setCustomToken] = React.useState("");
+
+  const idtoken = async () => {
+    const auth = getAuth();
+    signInWithCustomToken(auth, customToken)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // ...
+      });
+  };
+
+  const googleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    const auth = getAuth();
+    const user: UserCredential | any = await signInWithPopup(auth, provider)
+      .then((result) => {
+        return result.user;
+        // ...
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        // ...
+      });
+    console.log({ user });
+  };
+
+  const credentialSignup = () => {
+    const auth = getAuth();
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((user) => {
+        console.log(user.user);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const credentialLogin = () => {
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, email, password)
+      .then((user) => {
+        console.log(user.user);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const signOutall = () => {
+    const auth = getAuth();
+
+    signOut(auth)
+      .then((r) => {
+        console.log({ r });
+        // Sign-out successful.
+      })
+      .catch((error) => {
+        // An error happened.
+      });
+  };
   return (
     <>
       <Head>
@@ -14,101 +97,31 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={`${styles.main} ${inter.className}`}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-        </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
-        </div>
+      <main className={styles.main}>
+        <button onClick={googleLogin}>Google Login</button>
+        <label>email</label>
+        <input
+          onChange={(e) => {
+            setEmail(e.target.value);
+          }}
+        ></input>
+        <label>password</label>
+        <input
+          onChange={(e) => {
+            setPassword(e.target.value);
+          }}
+        ></input>
+        <label>customToken</label>
+        <input
+          onChange={(e) => {
+            setCustomToken(e.target.value);
+          }}
+        ></input>
+        <button onClick={credentialSignup}>Credential Sign Up</button>
+        <button onClick={credentialLogin}>Credential Log In</button>
+        <button onClick={signOutall}>Sign out All</button>
+        <button onClick={idtoken}>custom Token</button>
       </main>
     </>
-  )
+  );
 }
